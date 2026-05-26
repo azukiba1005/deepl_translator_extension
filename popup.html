@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>DeepL Page Translator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <svg class="header-logo" viewBox="0 0 100 100" width="24" height="24">
+          <rect x="8" y="8" width="84" height="84" rx="18" fill="#0f2d4a" />
+          <rect x="32" y="28" width="10" height="44" fill="#00f2fe" />
+          <path d="M42,28 C55,28 64,37 64,50 C64,63 55,72 42,72" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" />
+          <circle cx="66" cy="34" r="5" fill="#00f2fe" />
+        </svg>
+        <span class="app-title">DeepL Page Translator</span>
+      </div>
+      <button id="btn-toggle-settings" class="icon-button" title="設定">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main View: Translator -->
+    <main id="view-translator" class="view active">
+      <!-- Target Language Picker -->
+      <div class="lang-selector-card">
+        <label class="card-subtitle">翻訳先言語</label>
+        <div class="lang-selector-container">
+          <select id="select-target-lang" class="lang-select">
+            <option value="JA">日本語</option>
+            <option value="EN">英語</option>
+            <option value="ZH">中国語</option>
+            <option value="DE">ドイツ語</option>
+            <option value="FR">フランス語</option>
+            <option value="ES">スペイン語</option>
+            <option value="KO">韓国語</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Page Translation Section -->
+      <div class="page-translate-card">
+        <div class="page-translate-header">
+          <span class="card-subtitle">ページ全体の翻訳</span>
+        </div>
+        <p class="page-translate-desc">
+          表示中のWebページ全体のテキストを翻訳して一括置換します。
+        </p>
+        <div class="page-translate-actions">
+          <button id="btn-translate-page" class="primary-button flex-button">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;">
+              <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"></path>
+            </svg>
+            このページを翻訳
+          </button>
+          <button id="btn-revert-page" class="secondary-button" disabled>元に戻す</button>
+        </div>
+        <span class="page-translate-warning">※APIキーを設定している必要があります。文字消費にご注意ください。</span>
+      </div>
+      
+      <div id="api-status-warning" class="status-warning hidden">
+        <span>APIキーが設定されていません。自動翻訳や一括翻訳は動作しません。</span>
+        <button id="btn-go-settings" class="text-link">設定する</button>
+      </div>
+    </main>
+
+    <!-- Settings View -->
+    <main id="view-settings" class="view">
+      <div class="settings-panel">
+        <h3 class="panel-title">設定</h3>
+
+        <!-- DeepL API Key -->
+        <div class="setting-item">
+          <label class="setting-label" for="api-key-input">DeepL API キー</label>
+          <div class="input-password-wrapper">
+            <input type="password" id="api-key-input" placeholder="APIキーを入力 (df847...)">
+            <button id="btn-toggle-password" class="icon-button small text-muted">
+              <svg id="eye-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <span class="setting-help">APIキーを取得するには <a href="https://www.deepl.com/pro-api" target="_blank">DeepL API</a> から無料/有料プランに登録してください。</span>
+        </div>
+
+        <!-- API Type (Free or Pro) -->
+        <div class="setting-item">
+          <label class="setting-label">API プラン</label>
+          <div class="segmented-control">
+            <input type="radio" id="api-type-free" name="api-type" value="free" checked>
+            <label for="api-type-free">Developer (Free)</label>
+            
+            <input type="radio" id="api-type-pro" name="api-type" value="pro">
+            <label for="api-type-pro">Pro</label>
+          </div>
+        </div>
+
+        <!-- Extension Behavior -->
+        <div class="setting-item">
+          <label class="setting-label">拡張機能の動作</label>
+          
+          <div class="switch-row">
+            <span class="switch-desc">英語のサイトを自動で翻訳する</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-auto-translate">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <span class="setting-help" style="color: #b45309; display: block; margin-top: -4px; margin-bottom: 6px; font-size: 10px;">※ページを開いた際に自動で翻訳され、APIの文字数が消費されます。</span>
+        </div>
+
+        <!-- Theme Selection -->
+        <div class="setting-item">
+          <label class="setting-label" for="setting-theme">テーマ</label>
+          <select id="setting-theme" class="settings-select">
+            <option value="system">システム同期</option>
+            <option value="dark">ダークモード</option>
+            <option value="light">ライトモード</option>
+          </select>
+        </div>
+
+        <div class="settings-actions">
+          <button id="btn-save-settings" class="primary-button">保存</button>
+          <button id="btn-back-translator" class="secondary-button">キャンセル</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
